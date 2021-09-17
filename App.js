@@ -1,7 +1,7 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
+ * MAPD712_Assignment1
+ * Author: Phong Ngo
+ * Date: 17/09/2021
  * @format
  * @flow strict-local
  */
@@ -9,8 +9,6 @@
 import React from 'react';
 import {
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -19,7 +17,14 @@ import {
   View,
 } from 'react-native';
 
-const App = ()=> {
+export default class App extends React.Component{
+  state = {
+    height: 0,
+    weight: 0,
+    bmi: 0
+  }
+  
+render() {
   return (
     <ImageBackground
       source={require("./assets/background.jpg")}
@@ -37,6 +42,7 @@ const App = ()=> {
             placeholder="cm"
             keyboardType="numeric"
             style={styles.input}
+            onChangeText={height => {this.setState({height});}}
             
           />
         </View>
@@ -53,12 +59,16 @@ const App = ()=> {
           <TouchableOpacity
             style = {styles.submitButton}
             >
-            <Text style = {styles.submitButtonText}> Calculate </Text>
+            <Text style = {styles.submitButtonText}>Calculate BMI</Text>
           </TouchableOpacity>
+        </View>
+        <View>
+          <Text style = {styles.lblResult}>{this.state.height}</Text>
         </View>
       </View>
     </ImageBackground>
   );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -91,7 +101,7 @@ const styles = StyleSheet.create({
     width: "50%",
     fontSize: 24,
     marginTop: 10,
-    color: "#FFCB1F"
+    color: "#000000"
   },
   submitButton: {
     backgroundColor: '#036980',
@@ -99,6 +109,10 @@ const styles = StyleSheet.create({
     margin: 25,
     height: 40,
  },
+ lblResult:{
+  textAlign: "center",
+  fontSize: 24,
+},
  submitButtonText:{
     textAlign: "center",
     color: 'white',
@@ -106,5 +120,3 @@ const styles = StyleSheet.create({
  },
   
 });
-
-export default App;
