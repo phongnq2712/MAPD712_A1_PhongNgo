@@ -7,49 +7,75 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {useState} from 'react';
+import { RadioButton } from 'react-native-paper';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   ImageBackground,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
-export default class App extends React.Component{
-  state = {
-    height: 0,
-    weight: 0,
-    bmi: 0,
-    bmiText: ''
+// export default class App extends React.Component {
+const App = () => {
+  const [checked, setChecked] = useState('standard');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [bmi, setBmi] = useState();
+  const [bmiText, setBmiText] = useState('');
+  const [placeholderHeight, setPlaceholderHeight] = useState('cm');
+  const [placeholderWeight, setPlaceholderWeight] = useState('kg');
+
+  // calculateBMI = (height, weight) => {
+  setRadioStandard = () => {
+    setChecked('standard');
+    setPlaceholderHeight('cm');
+    setPlaceholderWeight('kg');
   }
 
-  calculateBMI = (height, weight) => {
-    // standard (kg/cm)
+  setRadioMetric = () => {
+    setChecked('metric');
+    setPlaceholderHeight('inch');
+    setPlaceholderWeight('lbs');
+  }
+
+  calculateBMI = () => {    
     var resultBMI = 0;
-    if(height > 0 && weight > 0) {
+    setHeight(height);
+    setWeight(weight);
+    
+    if(height <= 0) {
+      alert('Please enter valid your height');
+      return;
+    }
+    if(weight <= 0) {
+      alert('Please enter valid your weight');
+      return;
+    }
+    // standard mode (kg/cm)
+    if(checked == 'standard') {
       resultBMI = (parseFloat(weight)*10000)/(parseFloat(height)*parseFloat(height));
-      resultBMI = resultBMI.toFixed(2);
-      // display result
-      this.setState({bmi:resultBMI})
-      if(resultBMI < 18.5) {
-        this.setState({bmiText:'Underweight'});
-      } else if(resultBMI >= 18.5 && resultBMI < 25) {
-        this.setState({bmiText:'Normal weight'});
-      } else if(resultBMI >= 25 && resultBMI < 30) {
-        this.setState({bmiText:'Overweight'});
-      } else {
-        this.setState({bmiText:'Obesity'});
-      }
+    } else if(checked == 'metric') {
+      // metric mode (inch/lbs)
+      resultBMI = (parseFloat(weight)*703)/(parseFloat(height)*parseFloat(height));
+    }
+    
+    resultBMI = resultBMI.toFixed(2);
+    // display result
+    setBmi(resultBMI);
+    if(resultBMI < 18.5) {
+      setBmiText('Underweight');
+    } else if(resultBMI >= 18.5 && resultBMI < 25) {
+      setBmiText('Normal weight');
+    } else if(resultBMI >= 25 && resultBMI < 30) {
+      setBmiText('Overweight');
     } else {
-      this.setState({bmi:''});
-      this.setState({bmiText:'Please enter valid your height and weight'});
+      setBmiText('Obesity');
     }
   }
   
-render() {
   return (
     <ImageBackground
       source={require("./assets/background.jpg")}
@@ -61,41 +87,58 @@ render() {
         >
           BMI Calculator
         </Text>
+        <View style={styles.modeView}>
+          <Text style={{padding:5}}>Standard</Text>
+          <RadioButton
+            value="standard"        
+            status={checked === 'standard' ? 'checked' : 'unchecked'}
+            // onPress={() => setChecked('standard')}
+            onPress={() => this.setRadioStandard()}
+          ></RadioButton>
+          <Text style={{padding:5}}>Metric</Text>
+          <RadioButton
+            value="metric"
+            status={checked === 'metric' ? 'checked' : 'unchecked'}
+            // onPress={() => setChecked('metric')}
+            onPress={() => this.setRadioMetric()}
+          />          
+        </View>        
         <View style={styles.subView}>
           <Text style = {styles.lblSubTitle}>My Height</Text>
           <TextInput
-            placeholder="cm"
+            placeholder={placeholderHeight}
             keyboardType="number-pad"
             style={styles.input}
-            onChangeText={height => {this.setState({height});}}
+            defaultValue={height}
+            onChangeText={height => setHeight(height)}
             
           />
         </View>
         <View style={styles.subView}>
           <Text style = {styles.lblSubTitle}>My Weight</Text>
           <TextInput
-            placeholder="kg"
-            keyboardType="numeric"
+            placeholder={placeholderWeight}
+            keyboardType="number-pad"
             style={styles.input}
-            onChangeText={weight => {this.setState({weight});}}
+            defaultValue={weight}
+            onChangeText={weight => setWeight(weight)}
           />
         </View>
-        <View>
+        <View style={styles.lblSubmit}>
           <TouchableOpacity
             style = {styles.btnSubmit}
-            onPress={() => this.calculateBMI(this.state.height, this.state.weight)}
+            onPress={() => this.calculateBMI()}
             >
             <Text style = {styles.btnSubmitText}>Compute BMI</Text>
           </TouchableOpacity>
         </View>
         <View>
-          <Text style = {styles.lblResult}>{this.state.bmi}</Text>
-          <Text style = {styles.lblResult}>{this.state.bmiText}</Text>
+          <Text style = {styles.lblResult}>{bmi}</Text>
+          <Text style = {styles.lblResult}>{bmiText}</Text>
         </View>
       </View>
     </ImageBackground>
   );
-  }
 }
 
 const styles = StyleSheet.create({
@@ -104,6 +147,12 @@ const styles = StyleSheet.create({
   },
   subView: {
     flexDirection: 'row'
+  },
+  modeView: {
+    flexDirection: 'row',
+    justifyContent: "center",
+    alignSelf: "center",
+    margin: 20
   },
   lblTitle: {
     color: "#830587",
@@ -130,11 +179,23 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: "#000000"
   },
+  lblSubmit: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   btnSubmit: {
     backgroundColor: '#036980',
     padding: 5,
     margin: 20,
     height: 40,
+    width: 150
+  },
+  btnMode: {
+    backgroundColor: '#FF921B',
+    padding: 1,
+    margin: 20,
+    height: 30,
+    width: 120
   },
   lblResult:{
     textAlign: "center",
@@ -147,3 +208,4 @@ const styles = StyleSheet.create({
   },
   
 });
+export default App;
